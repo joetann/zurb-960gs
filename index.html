@@ -6,10 +6,11 @@
 <head>
 	<meta charset="utf-8" />
   <meta name="viewport" content="width=device-width" />
-  <title>Foundation 4</title>
+  <title>Foundation 4 with 960 grid</title>
 
   
   <link rel="stylesheet" href="stylesheets/app.css" />
+  <link rel="stylesheet" href="stylesheets/bootstrap.css" />
   
 
   <script src="javascripts/vendor/custom.modernizr.js"></script>
@@ -17,34 +18,22 @@
 </head>
 <body>
 
-	<div class="container">
-		<div class="row">
-			<div class="span12">
-				<h1>Header</h1>
-			</div>	
+<div class="container">
+	<div class="row">
+		<div class="span12">
+			<h1>Look! It's Zurb Foundation using Bootstrap's fixed grid!</h1>
 		</div>
 	</div>
+</div>
 
-	<div class="container">
-		<div class="row">
-			<div class="span1">
-				<h1>     fgjfgff fgtf ghf gh fghy f tyf tuyf tuy fuyt fuy ftuy fty fuy tfuy f yftyu ftuy fuy tfuy </h1>
-			</div>	
-		</div>
-	</div>
+<script>
+document.write('<script src=' +
+('__proto__' in {} ? 'js/vendor/zepto' : 'js/vendor/jquery') +
+'.js><\/script>')
 
-	<div class="container">
-		<div class="row">
-			<div class="span12">
-				<h1>Header</h1>
-			</div>	
-		</div>
-	</div>
+  $(document).foundation();
+</script>
 
-  
-  <script>
-    $(document).foundation();
-  </script>
 
 </body>
 </html>

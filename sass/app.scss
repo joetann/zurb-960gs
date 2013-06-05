@@ -1,6 +1,8 @@
 // Global Foundation Settings
+@import "compass";
 @import "settings";
 @import "960gs";
+@import "front";
 
 // Comment out this import if you don't want to use normalize
 @import "normalize";
@@ -22,7 +24,7 @@
 @import "foundation/components/button-groups"; //*requires components/buttons
 @import "foundation/components/dropdown-buttons"; //*requires components/buttons
 @import "foundation/components/split-buttons"; //*requires components/buttons
-@import "foundation/components/flex-video";
+// @import "foundation/components/flex-video";
 @import "foundation/components/section";
 // @import "foundation/components/top-bar";  //*requires components/grid
 @import "foundation/components/orbit";
