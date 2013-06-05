@@ -1,0 +1,674 @@
+3.2.6 (Media Mark)
+755a108dd629ed2ad73312ac6887b5c93532a94a
+o:Sass::Tree::RootNode
+:@template"•"//
+// Switch Variables
+//
+$include-html-form-classes: $include-html-classes !default;
+
+// Controlling border styles and background colors for the switch container
+$switch-border-color:             darken(#fff, 20%) !default;
+$switch-border-style:             solid !default;
+$switch-border-width:             1px !default;
+$switch-bg:                       #fff !default;
+
+// We use these to control the switch heights for our default classes
+$switch-height-tny:               22px !default;
+$switch-height-sml:               28px !default;
+$switch-height-med:               36px !default;
+$switch-height-lrg:               44px !default;
+$switch-bottom-margin:            emCalc(20px) !default;
+
+// We use these to control default font sizes for our classes.
+$switch-font-size-tny:            11px !default;
+$switch-font-size-sml:            12px !default;
+$switch-font-size-med:            14px !default;
+$switch-font-size-lrg:            17px !default;
+$switch-label-side-padding:       6px !default;
+
+// We use these to style the switch-paddle
+$switch-paddle-bg:                #fff !default;
+$switch-paddle-fade-to-color:     darken($switch-paddle-bg, 10%) !default;
+$switch-paddle-border-color:      darken($switch-paddle-bg, 35%) !default;
+$switch-paddle-border-width:      1px !default;
+$switch-paddle-border-style:      solid !default;
+$switch-paddle-transition-speed:  .1s !default;
+$switch-paddle-transition-ease:   ease-out !default;
+$switch-positive-color:           lighten($success-color, 50%) !default;
+$switch-negative-color:           #f5f5f5 !default;
+
+// Outline Style for tabbing through switches
+$switch-label-outline:            1px dotted #888 !default;
+
+
+//
+// Switch Mixins
+//
+
+// We use this mixin to create the base styles for our switch element.
+@mixin switch-base($transition-speed:$switch-paddle-transition-speed, $transition-ease:$switch-paddle-transition-ease) {
+
+  // Default position and structure for switch container.
+  position: relative;
+  width: 100%;
+  padding: 0;
+  display: block;
+  overflow: hidden;
+  border-style: $switch-border-style;
+  border-width: $switch-border-width;
+  margin-bottom: $switch-bottom-margin;
+
+  // Default label styles for type and transition
+  label {
+    position: relative;
+    #{$default-float}: 0;
+    z-index: 2;
+    float: $default-float;
+    width: 50%;
+    height: 100%;
+    margin: 0;
+    font-weight: bold;
+    text-align: $default-float;
+
+    // Transition for the switch label to follow paddle
+    @include single-transition(all, $transition-speed, $transition-ease);
+  }
+
+  // So that we don't need to recreate the form with any JS, we use the
+  // existing radio button, but we cleverly position and hide it.
+  input {
+    position: absolute;
+    z-index: 3;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    -moz-appearance: none;
+
+    // Hover and focus styles for the paddle
+    &:hover,
+    &:focus {
+      cursor: $cursor-pointer-value;
+    }
+  }
+
+  // The toggle area for radio switches. We call is a paddle.
+  & > span {
+    position: absolute;
+    top: -1px;
+    #{$default-float}: -1px;
+    z-index: 1;
+    display: block;
+    padding: 0;
+    border-width: $switch-paddle-border-width;
+    border-style: $switch-paddle-border-style;
+
+    // Transition for the switch paddle
+    @include single-transition(all, $transition-speed, $transition-ease);
+  }
+
+  // When a label isn't :checked, we hide it as it slides away.
+  input:not(:checked) + label { opacity: 0; }
+
+  // Controlling the position of the labels as they are toggled.
+  input:checked { display: none !important; }
+  input { #{$default-float}: 0; display: block !important; }
+
+  // Left Label alignment and position changes, including fixes for while inside a custom form
+  input:first-of-type + label,
+  input:first-of-type + span + label { #{$default-float}: -50%; }
+  input:first-of-type:checked + label,
+  input:first-of-type:checked + span + label { #{$default-float}: 0%; }
+
+  // Right Label alignment and position changes, including fixes for while inside a custom form
+  input:last-of-type + label,
+  input:last-of-type + span + label {#{$opposite-direction}: -50%; #{$default-float}: auto; text-align: $opposite-direction; }
+  input:last-of-type:checked + label,
+  input:last-of-type:checked + span + label { #{$opposite-direction}: 0%; #{$default-float}: auto; }
+
+  // Hiding custom form spans since we auto-create them
+  span.custom { display: none !important; }
+
+  // Bugfix for older Webkit, including mobile Webkit. Adapted from:
+  // http://css-tricks.com/webkit-sibling-bug/
+  @if $experimental { -webkit-animation: webkitSiblingBugfix infinite 1s; }
+
+}
+
+// We use this mixin to create the size styles for switches.
+@mixin switch-size($height:$switch-height-med, $font-size:$switch-font-size-med, $line-height:2.3em) {
+
+  height: $height;
+
+  label {
+    padding: 0 emCalc($switch-label-side-padding);
+    line-height: $line-height;
+    font-size: emCalc($font-size);
+  }
+
+  input {
+    // Move the paddle to the right position
+    &:first-of-type:checked ~ span {
+      #{$default-float}: 100%;
+      margin-#{$default-float}: emCalc(-$height + 1px);
+    }
+  }
+
+  & > span {
+    width: emCalc($height);
+    height: emCalc($height);
+  }
+
+}
+
+// We use this mixin to add color and other fanciness to the switches.
+@mixin switch-style($paddle-bg:$switch-paddle-bg, $positive-color:$switch-positive-color, $negative-color:$switch-negative-color, $radius:false, $base-style:true) {
+
+  @if $base-style {
+    background: $switch-bg;
+    border-color: $switch-border-color;
+
+    & > span {
+      border-color: darken($paddle-bg, 30%);
+      background: $paddle-bg;
+      @if $experimental {
+        background: -moz-linear-gradient(top, $paddle-bg 0%, darken($paddle-bg, 5%) 100%);
+        background: -webkit-linear-gradient(top, $paddle-bg 0%, darken($paddle-bg, 5%) 100%);
+      }
+      background: linear-gradient(to bottom, $paddle-bg 0%, darken($paddle-bg, 5%) 100%);
+
+      // Building the alternating colored sides of the switch
+      @if $experimental {
+        -webkit-box-shadow: 2px 0 10px 0 rgba(0,0,0,0.07),
+                            1000px 0 0 1000px $positive-color,
+                            -2px 0 10px 0 rgba(0,0,0,0.07),
+                            -1000px 0 0 1000px $negative-color;
+      }
+      box-shadow:         2px 0 10px 0 rgba(0,0,0,0.07),
+                          1000px 0 0 980px $positive-color,
+                          -2px 0 10px 0 rgba(0,0,0,0.07),
+                          -1000px 0 0 1000px $negative-color;
+    }
+
+    &:hover,
+    &:focus {
+      & > span {
+        background: $paddle-bg;
+        @if $experimental {
+          background: -moz-linear-gradient(top, $paddle-bg 0%, darken($paddle-bg, 10%) 100%);
+          background: -webkit-linear-gradient(top, $paddle-bg 0%, darken($paddle-bg, 10%) 100%);
+        }
+        background: linear-gradient(to bottom, $paddle-bg 0%, darken($paddle-bg, 10%) 100%);
+      }
+    }
+
+    &:active { background: transparent; }
+  }
+
+  // Setting up the radius for switches
+  @if $radius == true {
+    @include radius(4px);
+    & > span { @include radius(3px); }
+  }
+  @else if $radius {
+    @include radius($radius);
+    & > span { @include radius($radius - 1px); }
+  }
+
+}
+
+// We use this to quickly create switches with a single mixin
+@mixin switch($transition-speed:$switch-paddle-transition-speed, $transition-ease:$switch-paddle-transition-ease, $height:$switch-height-med, $font-size:$switch-font-size-med, $line-height:2.3em, $paddle-bg:$switch-paddle-bg, $positive-color:$switch-positive-color, $negative-color:$switch-negative-color, $radius:false, $base-style:true) {
+  @include switch-base($transition-speed, $transition-ease);
+  @include switch-size($height, $font-size, $line-height);
+  @include switch-style($paddle-bg, $positive-color, $negative-color, $radius, $base-style);
+}
+
+@if $include-html-form-classes != false {
+
+  /* Foundation Switches */
+  @media only screen {
+
+    // Containing element for the radio switch
+    div.switch {
+      @include switch;
+
+      // Large radio switches
+      &.large { @include switch-size($switch-height-lrg, $switch-font-size-lrg); }
+
+      // Small radio switches
+      &.small { @include switch-size($switch-height-sml, $switch-font-size-sml, 2.1em); }
+
+      // Tiny radio switches
+      &.tiny { @include switch-size($switch-height-tny, $switch-font-size-tny, 1.9em); }
+
+      // Add a radius to the switch
+      &.radius { @include radius(4px);
+        & > span { @include radius(3px); }
+      }
+
+      // Make the switch completely round, like a pill
+      &.round { @include radius(1000px);
+        & > span { @include radius(999px); }
+        label { padding: 0 emCalc($switch-label-side-padding + 3px); }
+      }
+
+    }
+
+    @if $experimental { @-webkit-keyframes webkitSiblingBugfix { from { position: relative; } to { position: relative; } } }
+
+  }
+}
+:@has_childrenT:@options{ :@children[.o:Sass::Tree::CommentNode
+:
+@type:silent:@value["!/*
+ * Switch Variables
+ * */;@;	[ :
+@lineio:Sass::Tree::VariableNode:@guarded"!default:
+@name"include-html-form-classes:
+@expro:Sass::Script::Variable	;"include-html-classes:@underscored_name"include_html_classes;@;i	;@;	[ ;i	o;
+
+;;;["S/* Controlling border styles and background colors for the switch container */;@;	[ ;io;;"!default;"switch-border-color;o:Sass::Script::Funcall;"darken:@keywords{ ;@:@splat0;i:
+@args[o:Sass::Script::Color	:@attrs{	:rediˇ:
+alphai:
+greeniˇ:	blueiˇ;0;@;io:Sass::Script::Number:@numerator_units["%:@original"20%;i;@:@denominator_units[ ;i;@;	[ ;io;;"!default;"switch-border-style;o:Sass::Script::String	;:identifier;"
+solid;@;i;@;	[ ;io;;"!default;"switch-border-width;o;; ["px;!"1px;i;@;"[ ;i;@;	[ ;io;;"!default;"switch-bg;o;	;{	;iˇ;i;iˇ;iˇ;0;@;i;@;	[ ;io;
+
+;;;["M/* We use these to control the switch heights for our default classes */;@;	[ ;io;;"!default;"switch-height-tny;o;; ["px;!"	22px;i;@;"[ ;i;@;	[ ;io;;"!default;"switch-height-sml;o;; ["px;!"	28px;i!;@;"[ ;i;@;	[ ;io;;"!default;"switch-height-med;o;; ["px;!"	36px;i);@;"[ ;i;@;	[ ;io;;"!default;"switch-height-lrg;o;; ["px;!"	44px;i1;@;"[ ;i;@;	[ ;io;;"!default;"switch-bottom-margin;o;;"emCalc;{ ;@;0;i;[o;; ["px;!"	20px;i;@;"[ ;i;@;	[ ;io;
+
+;;;["F/* We use these to control default font sizes for our classes. */;@;	[ ;io;;"!default;"switch-font-size-tny;o;; ["px;!"	11px;i;@;"[ ;i;@;	[ ;io;;"!default;"switch-font-size-sml;o;; ["px;!"	12px;i;@;"[ ;i;@;	[ ;io;;"!default;"switch-font-size-med;o;; ["px;!"	14px;i;@;"[ ;i;@;	[ ;io;;"!default;"switch-font-size-lrg;o;; ["px;!"	17px;i;@;"[ ;i;@;	[ ;io;;"!default;"switch-label-side-padding;o;; ["px;!"6px;i;@;"[ ;i;@;	[ ;io;
+
+;;;["2/* We use these to style the switch-paddle */;@;	[ ;io;;"!default;"switch-paddle-bg;o;	;{	;iˇ;i;iˇ;iˇ;0;@;i ;@;	[ ;i o;;"!default;" switch-paddle-fade-to-color;o;;"darken;{ ;@;0;i!;[o;	;"switch-paddle-bg;"switch_paddle_bg;@;i!o;; ["%;!"10%;i;@;"[ ;i!;@;	[ ;i!o;;"!default;"switch-paddle-border-color;o;;"darken;{ ;@;0;i";[o;	;"switch-paddle-bg;"switch_paddle_bg;@;i"o;; ["%;!"35%;i(;@;"[ ;i";@;	[ ;i"o;;"!default;"switch-paddle-border-width;o;; ["px;!"1px;i;@;"[ ;i#;@;	[ ;i#o;;"!default;"switch-paddle-border-style;o;#	;;$;"
+solid;@;i$;@;	[ ;i$o;;"!default;"#switch-paddle-transition-speed;o;; ["s;!"	0.1s;f0.10000000000000001 ôö;@;"[ ;i%;@;	[ ;i%o;;"!default;""switch-paddle-transition-ease;o;#	;;$;"ease-out;@;i&;@;	[ ;i&o;;"!default;"switch-positive-color;o;;"lighten;{ ;@;0;i';[o;	;"success-color;"success_color;@;i'o;; ["%;!"50%;i7;@;"[ ;i';@;	[ ;i'o;;"!default;"switch-negative-color;o;	;{	;iı;i;iı;iı;0;@;i(;@;	[ ;i(o;
+
+;;;["5/* Outline Style for tabbing through switches */;@;	[ ;i*o;;"!default;"switch-label-outline;o:Sass::Script::List	:@separator:
+space;[o;; ["px;!"1px;i;@;"[ ;i+o;#	;;$;"dotted;@;i+o;	;{	;ià;i;ià;ià;0;@;i+;@;i+;@;	[ ;i+o;
+
+;;;["/*
+ * Switch Mixins
+ * */;@;	[ ;i.o;
+
+;;;["N/* We use this mixin to create the base styles for our switch element. */;@;	[ ;i2o:Sass::Tree::MixinDefNode;"switch-base;T;@;	[#o;
+
+;;;["?/* Default position and structure for switch container. */;@;	[ ;i5o:Sass::Tree::PropNode;["position;o;#;;$;"relative;@:@prop_syntax:new;@:
+@tabsi ;	[ ;i6o;);["
+width;o;#;;$;"	100%;@;*;+;@;,i ;	[ ;i7o;);["padding;o;#;;$;"0;@;*;+;@;,i ;	[ ;i8o;);["display;o;#;;$;"
+block;@;*;+;@;,i ;	[ ;i9o;);["overflow;o;#;;$;"hidden;@;*;+;@;,i ;	[ ;i:o;);["border-style;o;	;"switch-border-style;"switch_border_style;@;i;;*;+;@;,i ;	[ ;i;o;);["border-width;o;	;"switch-border-width;"switch_border_width;@;i<;*;+;@;,i ;	[ ;i<o;);["margin-bottom;o;	;"switch-bottom-margin;"switch_bottom_margin;@;i=;*;+;@;,i ;	[ ;i=o;
+
+;;;["7/* Default label styles for type and transition */;@;	[ ;i?o:Sass::Tree::RuleNode:
+@rule["
+label:@parsed_ruleso:"Sass::Selector::CommaSequence:@filename" ;i@:@members[o:Sass::Selector::Sequence;2[o:#Sass::Selector::SimpleSequence
+:@sourceso:Set:
+@hash{ :@subject0;1@Y;i@;2[o:Sass::Selector::Element	;["
+label;1@Y:@namespace0;i@;T;@;,i ;	[o;);["position;o;#;;$;"relative;@;*;+;@;,i ;	[ ;iAo;);[o;	;"default-float;"default_float;@;iB;o;#;;$;"0;@;*;+;@;,i ;	[ ;iBo;);["z-index;o;#;;$;"2;@;*;+;@;,i ;	[ ;iCo;);["
+float;o;	;"default-float;"default_float;@;iD;*;+;@;,i ;	[ ;iDo;);["
+width;o;#;;$;"50%;@;*;+;@;,i ;	[ ;iEo;);["height;o;#;;$;"	100%;@;*;+;@;,i ;	[ ;iFo;);["margin;o;#;;$;"0;@;*;+;@;,i ;	[ ;iGo;);["font-weight;o;#;;$;"	bold;@;*;+;@;,i ;	[ ;iHo;);["text-align;o;	;"default-float;"default_float;@;iI;*;+;@;,i ;	[ ;iIo;
+
+;;;[";/* Transition for the switch label to follow paddle */;@;	[ ;iKo:Sass::Tree::MixinNode;"single-transition;{ ;@;	[ ;0;iL;[o;#	;;$;"all;@;iLo;	;"transition-speed;"transition_speed;@;iLo;	;"transition-ease;"transition_ease;@;iL;i@o;
+
+;;;["à/* So that we don't need to recreate the form with any JS, we use the
+ * existing radio button, but we cleverly position and hide it. */;@;	[ ;iOo;-;.["
+input;/o;0;1" ;iQ;2[o;3;2[o;4
+;5o;6;7{ ;80;1@∏;iQ;2[o;9	;["
+input;1@∏;:0;iQ;T;@;,i ;	[o;);["position;o;#;;$;"absolute;@;*;+;@;,i ;	[ ;iRo;);["z-index;o;#;;$;"3;@;*;+;@;,i ;	[ ;iSo;);["opacity;o;#;;$;"0;@;*;+;@;,i ;	[ ;iTo;);["
+width;o;#;;$;"	100%;@;*;+;@;,i ;	[ ;iUo;);["height;o;#;;$;"	100%;@;*;+;@;,i ;	[ ;iVo;);["-moz-appearance;o;#;;$;"	none;@;*;+;@;,i ;	[ ;iWo;
+
+;;;["0/* Hover and focus styles for the paddle */;@;	[ ;iYo;-;.["&:hover,
+    &:focus;/o;0;1" ;i[;2[o;3;2[o;4
+;5o;6;7{ ;80;1@;i[;2[o:Sass::Selector::Parent;1@;i[o:Sass::Selector::Pseudo
+;["
+hover;:
+class;1@:	@arg0;i[o;3;2["
+o;4
+;5o;6;7{ ;80;1@;i[;2[o;<;1@;i[o;=
+;["
+focus;;>;1@;?0;i[;T;@;,i ;	[o;);["cursor;o;	;"cursor-pointer-value;"cursor_pointer_value;@;i\;*;+;@;,i ;	[ ;i\;i[;iQo;
+
+;;;["C/* The toggle area for radio switches. We call is a paddle. */;@;	[ ;i`o;-;.["& > span;/o;0;1" ;ia;2[o;3;2[o;4
+;5o;6;7{ ;80;1@;ia;2[o;<;1@;ia">o;4
+;5o;6;7{ ;80;1@;ia;2[o;9	;["	span;1@;:0;ia;T;@;,i ;	[o;);["position;o;#;;$;"absolute;@;*;+;@;,i ;	[ ;ibo;);["top;o;#;;$;"	-1px;@;*;+;@;,i ;	[ ;ico;);[o;	;"default-float;"default_float;@;id;o;#;;$;"	-1px;@;*;+;@;,i ;	[ ;ido;);["z-index;o;#;;$;"1;@;*;+;@;,i ;	[ ;ieo;);["display;o;#;;$;"
+block;@;*;+;@;,i ;	[ ;ifo;);["padding;o;#;;$;"0;@;*;+;@;,i ;	[ ;igo;);["border-width;o;	;"switch-paddle-border-width;"switch_paddle_border_width;@;ih;*;+;@;,i ;	[ ;iho;);["border-style;o;	;"switch-paddle-border-style;"switch_paddle_border_style;@;ii;*;+;@;,i ;	[ ;iio;
+
+;;;["+/* Transition for the switch paddle */;@;	[ ;iko;;;"single-transition;{ ;@;	[ ;0;il;[o;#	;;$;"all;@;ilo;	;"transition-speed;"transition_speed;@;ilo;	;"transition-ease;"transition_ease;@;il;iao;
+
+;;;["E/* When a label isn't :checked, we hide it as it slides away. */;@;	[ ;ioo;-;.[" input:not(:checked) + label;/o;0;1" ;ip;2[o;3;2[o;4
+;5o;6;7{ ;80;1@v;ip;2[o;9	;["
+input;1@v;:0;ipo;=
+;["not;;>;1@v;?[":checked;ip"+o;4
+;5o;6;7{ ;80;1@v;ip;2[o;9	;["
+label;1@v;:0;ip;T;@;,i ;	[o;);["opacity;o;#;;$;"0;@;*;+;@;,i ;	[ ;ip;ipo;
+
+;;;["F/* Controlling the position of the labels as they are toggled. */;@;	[ ;iro;-;.["input:checked;/o;0;1" ;is;2[o;3;2[o;4
+;5o;6;7{ ;80;1@ù;is;2[o;9	;["
+input;1@ù;:0;iso;=
+;["checked;;>;1@ù;?0;is;T;@;,i ;	[o;);["display;o;%	;&;';[o;#	;;$;"	none;@;iso;#	;;$;"!important;@;is;@;is;*;+;@;,i ;	[ ;is;iso;-;.["
+input;/o;0;1" ;it;2[o;3;2[o;4
+;5o;6;7{ ;80;1@∫;it;2[o;9	;["
+input;1@∫;:0;it;T;@;,i ;	[o;);[o;	;"default-float;"default_float;@;it;o;#;;$;"0;@;*;+;@;,i ;	[ ;ito;);["display;o;%	;&;';[o;#	;;$;"
+block;@;ito;#	;;$;"!important;@;it;@;it;*;+;@;,i ;	[ ;it;ito;
+
+;;;["d/* Left Label alignment and position changes, including fixes for while inside a custom form */;@;	[ ;ivo;-;.["Finput:first-of-type + label,
+  input:first-of-type + span + label;/o;0;1" ;ix;2[o;3;2[o;4
+;5o;6;7{ ;80;1@‡;ix;2[o;9	;["
+input;1@‡;:0;ixo;=
+;["first-of-type;;>;1@‡;?0;ix"+o;4
+;5o;6;7{ ;80;1@‡;ix;2[o;9	;["
+label;1@‡;:0;ixo;3;2["
+o;4
+;5o;6;7{ ;80;1@‡;ix;2[o;9	;["
+input;1@‡;:0;ixo;=
+;["first-of-type;;>;1@‡;?0;ix"+o;4
+;5o;6;7{ ;80;1@‡;ix;2[o;9	;["	span;1@‡;:0;ix"+o;4
+;5o;6;7{ ;80;1@‡;ix;2[o;9	;["
+label;1@‡;:0;ix;T;@;,i ;	[o;);[o;	;"default-float;"default_float;@;ix;o;#;;$;"	-50%;@;*;+;@;,i ;	[ ;ix;ixo;-;.["Vinput:first-of-type:checked + label,
+  input:first-of-type:checked + span + label;/o;0;1" ;iz;2[o;3;2[o;4
+;5o;6;7{ ;80;1@ ;iz;2[o;9	;["
+input;1@ ;:0;izo;=
+;["first-of-type;;>;1@ ;?0;izo;=
+;["checked;;>;1@ ;?0;iz"+o;4
+;5o;6;7{ ;80;1@ ;iz;2[o;9	;["
+label;1@ ;:0;izo;3;2["
+o;4
+;5o;6;7{ ;80;1@ ;iz;2[o;9	;["
+input;1@ ;:0;izo;=
+;["first-of-type;;>;1@ ;?0;izo;=
+;["checked;;>;1@ ;?0;iz"+o;4
+;5o;6;7{ ;80;1@ ;iz;2[o;9	;["	span;1@ ;:0;iz"+o;4
+;5o;6;7{ ;80;1@ ;iz;2[o;9	;["
+label;1@ ;:0;iz;T;@;,i ;	[o;);[o;	;"default-float;"default_float;@;iz;o;#;;$;"0%;@;*;+;@;,i ;	[ ;iz;izo;
+
+;;;["e/* Right Label alignment and position changes, including fixes for while inside a custom form */;@;	[ ;i|o;-;.["Dinput:last-of-type + label,
+  input:last-of-type + span + label;/o;0;1" ;i~;2[o;3;2[o;4
+;5o;6;7{ ;80;1@j;i~;2[o;9	;["
+input;1@j;:0;i~o;=
+;["last-of-type;;>;1@j;?0;i~"+o;4
+;5o;6;7{ ;80;1@j;i~;2[o;9	;["
+label;1@j;:0;i~o;3;2["
+o;4
+;5o;6;7{ ;80;1@j;i~;2[o;9	;["
+input;1@j;:0;i~o;=
+;["last-of-type;;>;1@j;?0;i~"+o;4
+;5o;6;7{ ;80;1@j;i~;2[o;9	;["	span;1@j;:0;i~"+o;4
+;5o;6;7{ ;80;1@j;i~;2[o;9	;["
+label;1@j;:0;i~;T;@;,i ;	[o;);[o;	;"opposite-direction;"opposite_direction;@;i~;o;#;;$;"	-50%;@;*;+;@;,i ;	[ ;i~o;);[o;	;"default-float;"default_float;@;i~;o;#;;$;"	auto;@;*;+;@;,i ;	[ ;i~o;);["text-align;o;	;"opposite-direction;"opposite_direction;@;i~;*;+;@;,i ;	[ ;i~;i~o;-;.["Tinput:last-of-type:checked + label,
+  input:last-of-type:checked + span + label;/o;0;1" ;i{;2[o;3;2[o;4
+;5o;6;7{ ;80;1@π;i{;2[o;9	;["
+input;1@π;:0;i{o;=
+;["last-of-type;;>;1@π;?0;i{o;=
+;["checked;;>;1@π;?0;i{"+o;4
+;5o;6;7{ ;80;1@π;i{;2[o;9	;["
+label;1@π;:0;i{o;3;2["
+o;4
+;5o;6;7{ ;80;1@π;i{;2[o;9	;["
+input;1@π;:0;i{o;=
+;["last-of-type;;>;1@π;?0;i{o;=
+;["checked;;>;1@π;?0;i{"+o;4
+;5o;6;7{ ;80;1@π;i{;2[o;9	;["	span;1@π;:0;i{"+o;4
+;5o;6;7{ ;80;1@π;i{;2[o;9	;["
+label;1@π;:0;i{;T;@;,i ;	[o;);[o;	;"opposite-direction;"opposite_direction;@;i{;o;#;;$;"0%;@;*;+;@;,i ;	[ ;i{o;);[o;	;"default-float;"default_float;@;i{;o;#;;$;"	auto;@;*;+;@;,i ;	[ ;i{;i{o;
+
+;;;["=/* Hiding custom form spans since we auto-create them */;@;	[ ;i}o;-;.["span.custom;/o;0;1" ;i~;2[o;3;2[o;4
+;5o;6;7{ ;80;1@;i~;2[o;9	;["	span;1@;:0;i~o:Sass::Selector::Class;["custom;1@;i~;T;@;,i ;	[o;);["display;o;%	;&;';[o;#	;;$;"	none;@;i~o;#	;;$;"!important;@;i~;@;i~;*;+;@;,i ;	[ ;i~;i~o;
+
+;;;["w/* Bugfix for older Webkit, including mobile Webkit. Adapted from:
+ * http://css-tricks.com/webkit-sibling-bug/ */;@;	[ ;iÄu:Sass::Tree::IfNode’[o:Sass::Script::Variable	:
+@name"experimental:@underscored_name"experimental:@options{ :
+@lineiÇ0[o:Sass::Tree::PropNode;["-webkit-animation:@valueo:Sass::Script::List	:@separator:
+space;[o:Sass::Script::String	:
+@type:identifier;"webkitSiblingBugfix;@	;	iÇo;	;;;"infinite;@	;	iÇo:Sass::Script::Number:@numerator_units["s:@original"1s;i;@	:@denominator_units[ ;	iÇ;@	;	iÇ:@prop_syntax:new;@	:
+@tabsi :@children[ ;	iÇ;0;i3;[[o;;"transition-speed;"transition_speed;@o;	;"#switch-paddle-transition-speed;"#switch_paddle_transition_speed;@;i3[o;;"transition-ease;"transition_ease;@o;	;""switch-paddle-transition-ease;""switch_paddle_transition_ease;@;i3o;
+
+;;;["D/* We use this mixin to create the size styles for switches. */;@;	[ ;iÜo;(;"switch-size;T;@;	[	o;);["height;o;	;"height;"height;@;iâ;*;+;@;,i ;	[ ;iâo;-;.["
+label;/o;0;1" ;iã;2[o;3;2[o;4
+;5o;6;7{ ;80;1@J;iã;2[o;9	;["
+label;1@J;:0;iã;T;@;,i ;	[o;);["padding;o;%	;&;';[o;; [ ;!"0;i ;@;"[ ;iåo;;"emCalc;{ ;@;0;iå;[o;	;"switch-label-side-padding;"switch_label_side_padding;@;iå;@;iå;*;+;@;,i ;	[ ;iåo;);["line-height;o;	;"line-height;"line_height;@;iç;*;+;@;,i ;	[ ;iço;);["font-size;o;;"emCalc;{ ;@;0;ié;[o;	;"font-size;"font_size;@;ié;*;+;@;,i ;	[ ;ié;ião;-;.["
+input;/o;0;1" ;ië;2[o;3;2[o;4
+;5o;6;7{ ;80;1@};ië;2[o;9	;["
+input;1@};:0;ië;T;@;,i ;	[o;
+
+;;;["0/* Move the paddle to the right position */;@;	[ ;iío;-;.["#&:first-of-type:checked ~ span;/o;0;1" ;iì;2[o;3;2[o;4
+;5o;6;7{ ;80;1@ë;iì;2[o;<;1@ë;iìo;=
+;["first-of-type;;>;1@ë;?0;iìo;=
+;["checked;;>;1@ë;?0;iì"~o;4
+;5o;6;7{ ;80;1@ë;iì;2[o;9	;["	span;1@ë;:0;iì;T;@;,i ;	[o;);[o;	;"default-float;"default_float;@;iî;o;#;;$;"	100%;@;*;+;@;,i ;	[ ;iîo;);["margin-o;	;"default-float;"default_float;@;iï;o;;"emCalc;{ ;@;0;iï;[o:Sass::Script::Operation
+:@operand2o;; ["px;!"1px;i;@;"[ ;iï:@operand1o:!Sass::Script::UnaryOperation	;@:@operator:
+minus:@operando;	;"height;"height;@;iï;iï;@;F:	plus;iï;*;+;@;,i ;	[ ;iï;iì;iëo;-;.["& > span;/o;0;1" ;iô;2[o;3;2[o;4
+;5o;6;7{ ;80;1@ ;iô;2[o;<;1@ ;iô">o;4
+;5o;6;7{ ;80;1@ ;iô;2[o;9	;["	span;1@ ;:0;iô;T;@;,i ;	[o;);["
+width;o;;"emCalc;{ ;@;0;iö;[o;	;"height;"height;@;iö;*;+;@;,i ;	[ ;iöo;);["height;o;;"emCalc;{ ;@;0;iõ;[o;	;"height;"height;@;iõ;*;+;@;,i ;	[ ;iõ;iô;0;iá;[[o;;"height;"height;@o;	;"switch-height-med;"switch_height_med;@;iá[o;;"font-size;"font_size;@o;	;"switch-font-size-med;"switch_font_size_med;@;iá[o;;"line-height;"line_height;@o;; ["em;!"
+2.3em;f2.2999999999999998 ff;@;"[ ;iáo;
+
+;;;["N/* We use this mixin to add color and other fanciness to the switches. */;@;	[ ;i†o;(;"switch-style;T;@;	[u;A
+[o:Sass::Script::Variable	:
+@name"base-style:@underscored_name"base_style:@options{ :
+@linei£0[
+o:Sass::Tree::PropNode;["background:@valueo; 	;"switch-bg;"switch_bg;@	;	i§:@prop_syntax:new;@	:
+@tabsi :@children[ ;	i§o;
+;["border-color;o; 	;"switch-border-color;"switch_border_color;@	;	i•;;;@	;i ;[ ;	i•o:Sass::Tree::RuleNode:
+@rule["& > span:@parsed_ruleso:"Sass::Selector::CommaSequence:@filename" ;	iß:@members[o:Sass::Selector::Sequence;[o:#Sass::Selector::SimpleSequence
+:@sourceso:Set:
+@hash{ :@subject0;@;	iß;[o:Sass::Selector::Parent;@;	iß">o;
+;o;;{ ;0;@;	iß;[o:Sass::Selector::Element	;["	span;@:@namespace0;	iß:@has_childrenT;@	;i ;[o;
+;["border-color;o:Sass::Script::Funcall;"darken:@keywords{ ;@	:@splat0;	i®:
+@args[o; 	;"paddle-bg;"paddle_bg;@	;	i®o:Sass::Script::Number:@numerator_units["%:@original"30%;i#;@	:@denominator_units[ ;	i®;;;@	;i ;[ ;	i®o;
+;["background;o; 	;"paddle-bg;"paddle_bg;@	;	i©;;;@	;i ;[ ;	i©u:Sass::Tree::IfNode=[o:Sass::Script::Variable	:
+@name"experimental:@underscored_name"experimental:@options{ :
+@linei™0[o:Sass::Tree::PropNode;["background:@valueo:Sass::Script::Funcall;"-moz-linear-gradient:@keywords{ ;@	:@splat0;	i´:
+@args[o:Sass::Script::String	:
+@type:identifier;"top;@	;	i´o:Sass::Script::List	:@separator:
+space;[o; 	;"paddle-bg;"paddle_bg;@	;	i´o:Sass::Script::Number:@numerator_units["%:@original"0%;i ;@	:@denominator_units[ ;	i´;@	;	i´o;	;;;[o;;"darken;{ ;@	;0;	i´;[o; 	;"paddle-bg;"paddle_bg;@	;	i´o;;["%;"5%;i
+;@	;[ ;	i´o;;["%;"	100%;ii;@	;[ ;	i´;@	;	i´:@prop_syntax:new;@	:
+@tabsi :@children[ ;	i´o;
+;["background;o;;"-webkit-linear-gradient;{ ;@	;0;	i¨;[o;	;;;"top;@	;	i¨o;	;;;[o; 	;"paddle-bg;"paddle_bg;@	;	i¨o;;["%;"0%;i ;@	;[ ;	i¨;@	;	i¨o;	;;;[o;;"darken;{ ;@	;0;	i¨;[o; 	;"paddle-bg;"paddle_bg;@	;	i¨o;;["%;"5%;i
+;@	;[ ;	i¨o;;["%;"	100%;ii;@	;[ ;	i¨;@	;	i¨;;;@	;i ;[ ;	i¨o;
+;["background;o; ;"linear-gradient;!{ ;@	;"0;	iÆ;#[o:Sass::Script::List	:@separator:
+space;[o:Sass::Script::String	:
+@type:identifier;"to;@	;	iÆo;,	;-;.;"bottom;@	;	iÆ;@	;	iÆo;)	;*;+;[o; 	;"paddle-bg;"paddle_bg;@	;	iÆo;$;%["%;&"0%;i ;@	;'[ ;	iÆ;@	;	iÆo;)	;*;+;[o; ;"darken;!{ ;@	;"0;	iÆ;#[o; 	;"paddle-bg;"paddle_bg;@	;	iÆo;$;%["%;&"5%;i
+;@	;'[ ;	iÆo;$;%["%;&"	100%;ii;@	;'[ ;	iÆ;@	;	iÆ;;;@	;i ;[ ;	iÆo:Sass::Tree::CommentNode
+;-:silent;["?/* Building the alternating colored sides of the switch */;@	;[ ;	i∞u;(º[o:Sass::Script::Variable	:
+@name"experimental:@underscored_name"experimental:@options{ :
+@linei±0[o:Sass::Tree::PropNode;["-webkit-box-shadow:@valueo:Sass::Script::List	:@separator:
+comma;[	o;	;:
+space;[
+o:Sass::Script::Number:@numerator_units["px:@original"2px;i;@	:@denominator_units[ ;	i≤o;;[ ;"0;i ;@	;[ ;	i≤o;;["px;"	10px;i;@	;[ ;	i≤o;;[ ;"0;i ;@	;@;	i≤o:Sass::Script::Funcall;"	rgba:@keywords{ ;@	:@splat0;	i≤:
+@args[	o;;[ ;"0;i ;@	;@;	i≤o;;[ ;"0;i ;@	;@;	i≤o;;[ ;"0;i ;@	;@;	i≤o;;[ ;"	0.07;f0.070000000000000007 QÏ;@	;@;	i≤;@	;	i≤o;	;;;[
+o;;["px;"1000px;iË;@	;[ ;	i≥o;;[ ;"0;i ;@	;@;	i≥o;;[ ;"0;i ;@	;@;	i≥o;;["px;"1000px;iË;@	;[ ;	i≥o; 	;"positive-color;"positive_color;@	;	i≥;@	;	i≥o;	;;;[
+o;;["px;"	-2px;i˘;@	;[ ;	i¥o;;[ ;"0;i ;@	;@;	i¥o;;["px;"	10px;i;@	;[ ;	i¥o;;[ ;"0;i ;@	;@;	i¥o;;"	rgba;{ ;@	;0;	i¥;[	o;;[ ;"0;i ;@	;@;	i¥o;;[ ;"0;i ;@	;@;	i¥o;;[ ;"0;i ;@	;@;	i¥o;;[ ;"	0.07;f0.070000000000000007 QÏ;@	;@;	i¥;@	;	i¥o;	;;;[
+o;;["px;"-1000px;i˛¸;@	;[ ;	iµo;;[ ;"0;i ;@	;@;	iµo;;[ ;"0;i ;@	;@;	iµo;;["px;"1000px;iË;@	;[ ;	iµo; 	;"negative-color;"negative_color;@	;	iµ;@	;	iµ;@	;	i≤:@prop_syntax:new;@	:
+@tabsi :@children[ ;	iµo;
+;["box-shadow;o;)	;*:
+comma;[	o;)	;*;+;[
+o;$;%["px;&"2px;i;@	;'[ ;	i∑o;$;%[ ;&"0;i ;@	;'[ ;	i∑o;$;%["px;&"	10px;i;@	;'[ ;	i∑o;$;%[ ;&"0;i ;@	;'@Å;	i∑o; ;"	rgba;!{ ;@	;"0;	i∑;#[	o;$;%[ ;&"0;i ;@	;'@Å;	i∑o;$;%[ ;&"0;i ;@	;'@Å;	i∑o;$;%[ ;&"0;i ;@	;'@Å;	i∑o;$;%[ ;&"	0.07;f0.070000000000000007 QÏ;@	;'@Å;	i∑;@	;	i∑o;)	;*;+;[
+o;$;%["px;&"1000px;iË;@	;'[ ;	i∏o;$;%[ ;&"0;i ;@	;'@Å;	i∏o;$;%[ ;&"0;i ;@	;'@Å;	i∏o;$;%["px;&"
+980px;i‘;@	;'[ ;	i∏o; 	;"positive-color;"positive_color;@	;	i∏;@	;	i∏o;)	;*;+;[
+o;$;%["px;&"	-2px;i˘;@	;'[ ;	iπo;$;%[ ;&"0;i ;@	;'@Å;	iπo;$;%["px;&"	10px;i;@	;'[ ;	iπo;$;%[ ;&"0;i ;@	;'@Å;	iπo; ;"	rgba;!{ ;@	;"0;	iπ;#[	o;$;%[ ;&"0;i ;@	;'@Å;	iπo;$;%[ ;&"0;i ;@	;'@Å;	iπo;$;%[ ;&"0;i ;@	;'@Å;	iπo;$;%[ ;&"	0.07;f0.070000000000000007 QÏ;@	;'@Å;	iπ;@	;	iπo;)	;*;+;[
+o;$;%["px;&"-1000px;i˛¸;@	;'[ ;	i∫o;$;%[ ;&"0;i ;@	;'@Å;	i∫o;$;%[ ;&"0;i ;@	;'@Å;	i∫o;$;%["px;&"1000px;iË;@	;'[ ;	i∫o; 	;"negative-color;"negative_color;@	;	i∫;@	;	i∫;@	;	i∑;;;@	;i ;[ ;	i∫;	ißo;;["&:hover,
+    &:focus;o;;" ;	iæ;[o;;[o;
+;o;;{ ;0;@Ì;	iæ;[o;;@Ì;	iæo:Sass::Selector::Pseudo
+;["
+hover;-:
+class;@Ì:	@arg0;	iæo;;["
+o;
+;o;;{ ;0;@Ì;	iæ;[o;;@Ì;	iæo;2
+;["
+focus;-;3;@Ì;40;	iæ;T;@	;i ;[o;;["& > span;o;;" ;	iø;[o;;[o;
+;o;;{ ;0;@	;	iø;[o;;@	;	iø">o;
+;o;;{ ;0;@	;	iø;[o;	;["	span;@	;0;	iø;T;@	;i ;[o;
+;["background;o; 	;"paddle-bg;"paddle_bg;@	;	i¿;;;@	;i ;[ ;	i¿u;(?[o:Sass::Script::Variable	:
+@name"experimental:@underscored_name"experimental:@options{ :
+@linei¡0[o:Sass::Tree::PropNode;["background:@valueo:Sass::Script::Funcall;"-moz-linear-gradient:@keywords{ ;@	:@splat0;	i¬:
+@args[o:Sass::Script::String	:
+@type:identifier;"top;@	;	i¬o:Sass::Script::List	:@separator:
+space;[o; 	;"paddle-bg;"paddle_bg;@	;	i¬o:Sass::Script::Number:@numerator_units["%:@original"0%;i ;@	:@denominator_units[ ;	i¬;@	;	i¬o;	;;;[o;;"darken;{ ;@	;0;	i¬;[o; 	;"paddle-bg;"paddle_bg;@	;	i¬o;;["%;"10%;i;@	;[ ;	i¬o;;["%;"	100%;ii;@	;[ ;	i¬;@	;	i¬:@prop_syntax:new;@	:
+@tabsi :@children[ ;	i¬o;
+;["background;o;;"-webkit-linear-gradient;{ ;@	;0;	i√;[o;	;;;"top;@	;	i√o;	;;;[o; 	;"paddle-bg;"paddle_bg;@	;	i√o;;["%;"0%;i ;@	;[ ;	i√;@	;	i√o;	;;;[o;;"darken;{ ;@	;0;	i√;[o; 	;"paddle-bg;"paddle_bg;@	;	i√o;;["%;"10%;i;@	;[ ;	i√o;;["%;"	100%;ii;@	;[ ;	i√;@	;	i√;;;@	;i ;[ ;	i√o;
+;["background;o; ;"linear-gradient;!{ ;@	;"0;	i≈;#[o;)	;*;+;[o;,	;-;.;"to;@	;	i≈o;,	;-;.;"bottom;@	;	i≈;@	;	i≈o;)	;*;+;[o; 	;"paddle-bg;"paddle_bg;@	;	i≈o;$;%["%;&"0%;i ;@	;'[ ;	i≈;@	;	i≈o;)	;*;+;[o; ;"darken;!{ ;@	;"0;	i≈;#[o; 	;"paddle-bg;"paddle_bg;@	;	i≈o;$;%["%;&"10%;i;@	;'[ ;	i≈o;$;%["%;&"	100%;ii;@	;'[ ;	i≈;@	;	i≈;;;@	;i ;[ ;	i≈;	iø;	iæo;;["&:active;o;;" ;	i…;[o;;[o;
+;o;;{ ;0;@R;	i…;[o;;@R;	i…o;2
+;["active;-;3;@R;40;	i…;T;@	;i ;[o;
+;["background;o;,;-;.;"transparent;@	;;;@	;i ;[ ;	i…;	i…o;
+
+;;;["-/* Setting up the radius for switches */;@;	[ ;iÃu;AË[o:Sass::Script::Operation
+:@operand2o:Sass::Script::Bool:@valueT:@options{ :
+@lineiÕ:@operand1o:Sass::Script::Variable	:
+@name"radius:@underscored_name"radius;	@;
+iÕ;	@:@operator:eq;
+iÕu:Sass::Tree::IfNodeh[o:Sass::Script::Variable	:
+@name"radius:@underscored_name"radius:@options{ :
+@linei—0[o:Sass::Tree::MixinNode;"radius:@keywords{ ;@	:@children[ :@splat0;	i“:
+@args[o; 	;"radius;"radius;@	;	i“o:Sass::Tree::RuleNode:
+@rule["& > span:@parsed_ruleso:"Sass::Selector::CommaSequence:@filename" ;	i”:@members[o:Sass::Selector::Sequence;[o:#Sass::Selector::SimpleSequence
+:@sourceso:Set:
+@hash{ :@subject0;@;	i”;[o:Sass::Selector::Parent;@;	i”">o;
+;o;;{ ;0;@;	i”;[o:Sass::Selector::Element	;["	span;@:@namespace0;	i”:@has_childrenT;@	:
+@tabsi ;[o;
+;"radius;{ ;@	;[ ;0;	i”;[o:Sass::Script::Operation
+:@operand2o:Sass::Script::Number:@numerator_units["px:@original"1px:@valuei;@	:@denominator_units[ ;	i”:@operand1o; 	;"radius;"radius;@	;	i”;@	:@operator:
+minus;	i”;	i”[o:Sass::Tree::MixinNode;"radius:@keywords{ ;	@:@children[ :@splat0;
+iŒ:
+@args[o:Sass::Script::Number:@numerator_units["px:@original"4px;i	;	@:@denominator_units[ ;
+iŒo:Sass::Tree::RuleNode:
+@rule["& > span:@parsed_ruleso:"Sass::Selector::CommaSequence:@filename" ;
+iœ:@members[o:Sass::Selector::Sequence; [o:#Sass::Selector::SimpleSequence
+:@sourceso:Set:
+@hash{ :@subject0;@;
+iœ; [o:Sass::Selector::Parent;@;
+iœ">o;"
+;#o;$;%{ ;&0;@;
+iœ; [o:Sass::Selector::Element	;["	span;@:@namespace0;
+iœ:@has_childrenT;	@:
+@tabsi ;[o;;"radius;{ ;	@;[ ;0;
+iœ;[o;;["px;"3px;i;	@;[ ;
+iœ;
+iœ;0;i°;[
+[o;;"paddle-bg;"paddle_bg;@o;	;"switch-paddle-bg;"switch_paddle_bg;@;i°[o;;"positive-color;"positive_color;@o;	;"switch-positive-color;"switch_positive_color;@;i°[o;;"negative-color;"negative_color;@o;	;"switch-negative-color;"switch_negative_color;@;i°[o;;"radius;"radius;@o:Sass::Script::Bool;F;@;i°[o;;"base-style;"base_style;@o;J;T;@;i°o;
+
+;;;["E/* We use this to quickly create switches with a single mixin */;@;	[ ;iÿo;(;"switch;T;@;	[o;;;"switch-base;{ ;@;	[ ;0;i⁄;[o;	;"transition-speed;"transition_speed;@;i⁄o;	;"transition-ease;"transition_ease;@;i⁄o;;;"switch-size;{ ;@;	[ ;0;i€;[o;	;"height;"height;@;i€o;	;"font-size;"font_size;@;i€o;	;"line-height;"line_height;@;i€o;;;"switch-style;{ ;@;	[ ;0;i‹;[
+o;	;"paddle-bg;"paddle_bg;@;i‹o;	;"positive-color;"positive_color;@;i‹o;	;"negative-color;"negative_color;@;i‹o;	;"radius;"radius;@;i‹o;	;"base-style;"base_style;@;i‹;0;iŸ;[[o;;"transition-speed;"transition_speed;@o;	;"#switch-paddle-transition-speed;"#switch_paddle_transition_speed;@;iŸ[o;;"transition-ease;"transition_ease;@o;	;""switch-paddle-transition-ease;""switch_paddle_transition_ease;@;iŸ[o;;"height;"height;@o;	;"switch-height-med;"switch_height_med;@;iŸ[o;;"font-size;"font_size;@o;	;"switch-font-size-med;"switch_font_size_med;@;iŸ[o;;"line-height;"line_height;@o;; ["em;!"
+2.3em;f2.2999999999999998 ff;@;"[ ;iŸ[o;;"paddle-bg;"paddle_bg;@o;	;"switch-paddle-bg;"switch_paddle_bg;@;iŸ[o;;"positive-color;"positive_color;@o;	;"switch-positive-color;"switch_positive_color;@;iŸ[o;;"negative-color;"negative_color;@o;	;"switch-negative-color;"switch_negative_color;@;iŸ[o;;"radius;"radius;@o;J;F;@;iŸ[o;;"base-style;"base_style;@o;J;T;@;iŸu;AÚ[o:Sass::Script::Operation
+:@operand2o:Sass::Script::Bool:@valueF:@options{ :
+@lineiﬂ:@operand1o:Sass::Script::Variable	:
+@name"include-html-form-classes:@underscored_name"include_html_form_classes;	@;
+iﬂ;	@:@operator:neq;
+iﬂ0[o:Sass::Tree::CommentNode
+:
+@type:normal;["/* Foundation Switches */;	@:@children[ ;
+i·o:Sass::Tree::MediaNode:@has_childrenT;" ;	@:
+@tabsi ;[o;
+;:silent;["2/* Containing element for the radio switch */;	@;[ ;
+i‰o:Sass::Tree::RuleNode:
+@rule["div.switch:@parsed_ruleso:"Sass::Selector::CommaSequence:@filename" ;
+iÂ:@members[o:Sass::Selector::Sequence;[o:#Sass::Selector::SimpleSequence
+:@sourceso:Set:
+@hash{ :@subject0;@;
+iÂ;[o:Sass::Selector::Element	;["div;@:@namespace0;
+iÂo:Sass::Selector::Class;["switch;@;
+iÂ;T;	@;i ;[o:Sass::Tree::MixinNode;"switch:@keywords{ ;	@;[ :@splat0;
+iÊ:
+@args[ o;
+;;;["/* Large radio switches */;	@;[ ;
+iËo;;["&.large;o;;" ;
+iÈ;[o;;[o; 
+;!o;";#{ ;$0;@8;
+iÈ;[o:Sass::Selector::Parent;@8;
+iÈo;';["
+large;@8;
+iÈ;T;	@;i ;[o;(;"switch-size;){ ;	@;[ ;*0;
+iÈ;+[o;	;"switch-height-lrg;"switch_height_lrg;	@;
+iÈo;	;"switch-font-size-lrg;"switch_font_size_lrg;	@;
+iÈ;
+iÈo;
+;;;["/* Small radio switches */;	@;[ ;
+iÎo;;["&.small;o;;" ;
+iÏ;[o;;[o; 
+;!o;";#{ ;$0;@X;
+iÏ;[o;,;@X;
+iÏo;';["
+small;@X;
+iÏ;T;	@;i ;[o;(;"switch-size;){ ;	@;[ ;*0;
+iÏ;+[o;	;"switch-height-sml;"switch_height_sml;	@;
+iÏo;	;"switch-font-size-sml;"switch_font_size_sml;	@;
+iÏo:Sass::Script::Number:@numerator_units["em:@original"
+2.1em;f2.1000000000000001 ÃÕ;	@:@denominator_units[ ;
+iÏ;
+iÏo;
+;;;["/* Tiny radio switches */;	@;[ ;
+iÓo;;["&.tiny;o;;" ;
+iÔ;[o;;[o; 
+;!o;";#{ ;$0;@~;
+iÔ;[o;,;@~;
+iÔo;';["	tiny;@~;
+iÔ;T;	@;i ;[o;(;"switch-size;){ ;	@;[ ;*0;
+iÔ;+[o;	;"switch-height-tny;"switch_height_tny;	@;
+iÔo;	;"switch-font-size-tny;"switch_font_size_tny;	@;
+iÔo;-;.["em;/"
+1.9em;f1.8999999999999999 ff;	@;0[ ;
+iÔ;
+iÔo;
+;;;["%/* Add a radius to the switch */;	@;[ ;
+iÒo;;["&.radius;o;;" ;
+iÚ;[o;;[o; 
+;!o;";#{ ;$0;@ü;
+iÚ;[o;,;@ü;
+iÚo;';["radius;@ü;
+iÚ;T;	@;i ;[o;(;"radius;){ ;	@;[ ;*0;
+iÚ;+[o;-;.["px;/"4px;i	;	@;0[ ;
+iÚo;;["& > span;o;;" ;
+iÛ;[o;;[o; 
+;!o;";#{ ;$0;@∫;
+iÛ;[o;,;@∫;
+iÛ">o; 
+;!o;";#{ ;$0;@∫;
+iÛ;[o;%	;["	span;@∫;&0;
+iÛ;T;	@;i ;[o;(;"radius;){ ;	@;[ ;*0;
+iÛ;+[o;-;.["px;/"3px;i;	@;0[ ;
+iÛ;
+iÛ;
+iÚo;
+;;;["8/* Make the switch completely round, like a pill */;	@;[ ;
+iˆo;;["&.round;o;;" ;
+i˜;[o;;[o; 
+;!o;";#{ ;$0;@ﬁ;
+i˜;[o;,;@ﬁ;
+i˜o;';["
+round;@ﬁ;
+i˜;T;	@;i ;[o;(;"radius;){ ;	@;[ ;*0;
+i˜;+[o;-;.["px;/"1000px;iË;	@;0[ ;
+i˜o;;["& > span;o;;" ;
+i¯;[o;;[o; 
+;!o;";#{ ;$0;@˘;
+i¯;[o;,;@˘;
+i¯">o; 
+;!o;";#{ ;$0;@˘;
+i¯;[o;%	;["	span;@˘;&0;
+i¯;T;	@;i ;[o;(;"radius;){ ;	@;[ ;*0;
+i¯;+[o;-;.["px;/"
+999px;iÁ;	@;0[ ;
+i¯;
+i¯o;;["
+label;o;;" ;
+i˘;[o;;[o; 
+;!o;";#{ ;$0;@;
+i˘;[o;%	;["
+label;@;&0;
+i˘;T;	@;i ;[o:Sass::Tree::PropNode;["padding;o:Sass::Script::List	:@separator:
+space;[o;-;.[ ;/"0;i ;	@;0[ ;
+i˘o:Sass::Script::Funcall;"emCalc;){ ;	@;*0;
+i˘;+[o; 
+;o;-;.["px;/"3px;i;	@;0[ ;
+i˘;o;	;"switch-label-side-padding;"switch_label_side_padding;	@;
+i˘;	@;:	plus;
+i˘;	@;
+i˘:@prop_syntax:new;	@;i ;[ ;
+i˘;
+i˘;
+i˜;
+iÂu:Sass::Tree::IfNode\[o:Sass::Script::Variable	:
+@name"experimental:@underscored_name"experimental:@options{ :
+@linei˛0[o:Sass::Tree::DirectiveNode
+:@has_childrenT:@value["@-webkit-keyframes "webkitSiblingBugfix" ;@	:@children[o:Sass::Tree::RuleNode:
+@rule["	from:@parsed_ruleso:"Sass::Selector::CommaSequence:@filename" ;	i˛:@members[o:Sass::Selector::Sequence;[o:#Sass::Selector::SimpleSequence
+:@sourceso:Set:
+@hash{ :@subject0;@;	i˛;[o:Sass::Selector::Element	;["	from;@:@namespace0;	i˛;T;@	:
+@tabsi ;[o:Sass::Tree::PropNode;["position;o:Sass::Script::String:
+@type:identifier;"relative;@	:@prop_syntax:new;@	;i ;[ ;	i˛;	i˛o;;["to;o;;" ;	i˛;[o;;[o;
+;o;;{ ;0;@+;	i˛;[o;	;["to;@+;0;	i˛;T;@	;i ;[o;;["position;o;;; ;"relative;@	;!;";@	;i ;[ ;	i˛;	i˛;	i˛:@query["	only" "screen;
+i‚;i
